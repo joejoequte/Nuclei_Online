@@ -1,1 +1,14 @@
-1
+    - name: Running naabu to check top 1000 ports
+        run: |
+          naabu -l output/active_subdomains.txt  -rate 10000 -top-ports 1000 | tee output/active_ports.txt
+        shell: bash
+  
+      - name: Running dirscan 
+        run: |
+          wget https://raw.githubusercontent.com/maurosoria/dirsearch/master/db/dicc.txt
+          mkdir dirout
+          set +e ;time for i in $(cat output/active_urls.txt );do ffuf -w dicc.txt -u $i/FUZZ -t 200 -mc 200 -ac -recursion -v -of csv -o dirout/`date +%Y%m%d%H%M%S`.csv; done
+          cat dirout/*.csv >> output/dirout.csv
+        shell: bash
+
+      
