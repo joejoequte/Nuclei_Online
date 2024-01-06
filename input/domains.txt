@@ -1,6 +1,5 @@
-gxau.edu.cn
-tongji.edu.cn
-183.169.156.4:8082
-59.75.8.98:8001
-42.247.66.68:3000
-166.111.34.38:10003
+gxtcmu.edu.cn
+ccnu.edu.cn
+xust.edu.cn
+sanyau.edu.cn
+lzmvc.edu.cn
