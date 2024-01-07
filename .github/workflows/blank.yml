@@ -9,24 +9,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo  # 检出仓库
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
 
-      - name: Set up Go
+      - name: Set up Go  # 设置 Go
         uses: actions/setup-go@v2
         with:
-            go-version: '1.20'
-            node-version: '16'
-
+          go-version: '1.20'
 
       - name: Setup Dependencies  # 安装依赖项
         run: sudo apt-get install libpcap-dev
         
-      - name: Cache Go  # 缓存 Go
-        id: cache-go
+      - name: Cache Go and ProjectDiscovery tools  # 缓存 Go 和 ProjectDiscovery 工具
         uses: actions/cache@v2
         with:
-          path: /home/runner/go
-          key: ${{ runner.os }}-go
+          path: |
+            ~/go/pkg
+            ~/.cache/go-build
+            ~/go/bin/subfinder
+            ~/go/bin/dnsx
+            ~/go/bin/naabu
+            ~/go/bin/httpx
+            ~/go/bin/mapcidr
+            ~/go/bin/ffuf
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           
       - name: Running ParamSpider  # 运行 ParamSpider
         shell: bash
@@ -34,9 +39,6 @@ jobs:
           pip3 install -r ParamSpider/requirements.txt
           chmod +x run.py
           python3 run.py
-
-      - name: 安装依赖项
-        run: sudo apt-get install libpcap-dev
 
       - name: 安装 ProjectDiscovery 工具
         env:
@@ -79,20 +81,13 @@ jobs:
           find output -type f -exec sort {} -o {} \;
         shell: bash
 
-      - name: Create local changes  # 创建本地更改
+      - name: Create a timestamped result file  # 创建一个带时间戳的结果文件
         run: |
-          git add output/vuln.txt
-          
+          date=$(date +%Y%m%d%H%M%S)
+          cp output/vuln.txt output/$date.txt
+          git add output/$date.txt
         shell: bash
 
-      - name: Sorting the output results  # 排序输出结果
-        run: |
-          find output -type f -exec sort {} -o {} \;
-        shell: bash
-
-      - name: Create local changes  # 创建本地更改
-        run: |
-          git add output/vuln.txt
       - name: Commit results to Github  # 将结果提交到 Github
         run: |
           git config --local user.email "2991885177@qq.com"
@@ -103,9 +98,3 @@ jobs:
         with:
           github_token: ${{ secrets.GIT_TOKEN }}
           branch: ${{ github.ref }}
-      - name: Create a timestamped result file  # 创建一个带时间戳的结果文件
-        run: |
-          date=$(date +%Y%m%d%H%M%S)
-          cp output/vuln.txt output/$date.txt
-          git add output/$date.txt
-        shell: bash
