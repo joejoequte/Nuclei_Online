@@ -1,4 +1,2 @@
-yxwy.org
-nygz.xhedu.sh.cn
-yccj.edu.sh.cn
-dtc.hpe.cn
+xhedu.sh.cn
+edu.sh.cn
