@@ -1,5 +1,1 @@
-gxtcmu.edu.cn
-ccnu.edu.cn
-xust.edu.cn
-sanyau.edu.cn
-lzmvc.edu.cn
+whxy.edu.cn
