@@ -33,37 +33,34 @@ jobs:
             ~/go/bin/ffuf
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           
-      - name: Running ParamSpider  # 运行 ParamSpider
-        shell: bash
+      - name: Install OneForAll  # 安装 OneForAll
         run: |
-          pip3 install -r ParamSpider/requirements.txt
-          chmod +x run.py
-          python3 run.py
+          git clone https://github.com/shmilylty/OneForAll.git
+          cd OneForAll
+          pip3 install -r requirements.txt
+        shell: bash
 
-      - name: 安装依赖项
-        run: sudo apt-get install libpcap-dev
+      - name: Running OneForAll for subdomain enumeration  # 运行 OneForAll 进行子域名枚举
+        run: |
+          python3 OneForAll/oneforall.py --target input/domains.txt run > output/oneforall.txt
+        shell: bash
 
       - name: 安装 ProjectDiscovery 工具
         env:
           GO111MODULE: on
         run: |
-          go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
           go install github.com/projectdiscovery/dnsx/cmd/dnsx@latest
           go install github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
           go install github.com/projectdiscovery/httpx/cmd/httpx@latest
           go install github.com/projectdiscovery/mapcidr/cmd/mapcidr@latest
+          go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
           go install github.com/ffuf/ffuf@latest
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
         shell: bash
 
-      - name: Running SubFinder for passive DNS enumeration  # 运行 SubFinder 进行被动 DNS 枚举
-        run: |
-          subfinder -dL input/domains.txt -config config/subfinder-config.yaml -o output/passive_subdomains.txt
-        shell: bash
-
       - name: Running dnsx for valid DNS filtering   # 运行 dnsx 进行有效 DNS 过滤
         run: |
-          dnsx -l output/passive_subdomains.txt -t 50 | tee output/active_subdomains.txt
+          dnsx -l output/oneforall.txt -t 50 | tee output/active_subdomains.txt
         shell: bash
 
       - name: Running httpx for HTTP webservers probbing  # 运行 httpx 进行 HTTP 服务器探测
@@ -73,11 +70,9 @@ jobs:
         shell: bash
       
       - name: Nuclei - Vulnerability Scan  # Nuclei - 漏洞扫描
-        uses: projectdiscovery/nuclei-action@main
-        with:
-            urls: output/active_urls.txt
-            templates: nuclei-templates/
-            output: output/vuln.txt
+        run: |
+          nuclei -list output/active_urls.txt -c 100 -o output/vuln.txt
+        shell: bash
 
       - name: Sorting the output results  # 排序输出结果
         run: |
@@ -93,7 +88,7 @@ jobs:
 
       - name: Clear all txt files except the timestamped one  # 清空所有的 txt 文件（除了带时间戳的那个）
         run: |
-          find output -type f -name "*.txt" ! -name "$date.txt" -exec rm {} \;
+          find output -type f -name "*.txt" ! -name "$date.txt" -exec truncate -s 0 {} \;
         shell: bash
 
       - name: Commit results to Github  # 将结果提交到 Github
