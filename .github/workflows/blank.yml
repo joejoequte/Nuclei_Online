@@ -42,7 +42,7 @@ jobs:
 
       - name: Running OneForAll for subdomain enumeration  # 运行 OneForAll 进行子域名枚举
         run: |
-          python3 OneForAll/oneforall.py --target input/domains.txt run > output/oneforall.txt
+          python3 OneForAll/oneforall.py --targets input/domains.txt run > output/oneforall.txt
         shell: bash
 
       - name: 安装 ProjectDiscovery 工具
