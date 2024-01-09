@@ -14,7 +14,7 @@ jobs:
       - name: Set up Go  # 设置 Go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.21'
+          go-version: '1.21'  # 更新 Go 版本到 1.21
 
       - name: Setup Dependencies  # 安装依赖项
         run: sudo apt-get install libpcap-dev
@@ -31,9 +31,17 @@ jobs:
             ~/go/bin/httpx
             ~/go/bin/mapcidr
             ~/go/bin/ffuf
-            ~/go/bin/nuclei
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           
+      - name: Running ParamSpider  # 运行 ParamSpider
+        shell: bash
+        run: |
+          pip3 install -r ParamSpider/requirements.txt
+          chmod +x run.py
+          python3 run.py
+
+      - name: 安装依赖项
+        run: sudo apt-get install libpcap-dev
 
       - name: 安装 ProjectDiscovery 工具
         env:
@@ -44,7 +52,6 @@ jobs:
           go install github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
           go install github.com/projectdiscovery/httpx/cmd/httpx@latest
           go install github.com/projectdiscovery/mapcidr/cmd/mapcidr@latest
-          go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
           go install github.com/ffuf/ffuf@latest
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
         shell: bash
@@ -66,9 +73,11 @@ jobs:
         shell: bash
       
       - name: Nuclei - Vulnerability Scan  # Nuclei - 漏洞扫描
-        run: |
-          nuclei -list output/active_urls.txt -c 100 -o output/vuln.txt
-        shell: bash
+        uses: projectdiscovery/nuclei-action@main
+        with:
+            urls: output/active_urls.txt
+            templates: nuclei-templates/
+            output: output/vuln.txt
 
       - name: Sorting the output results  # 排序输出结果
         run: |
@@ -80,6 +89,11 @@ jobs:
           date=$(date +%Y%m%d%H%M%S)
           cp output/vuln.txt output/$date.txt
           git add output/$date.txt
+        shell: bash
+
+      - name: Clear all txt files except the timestamped one  # 清空所有的 txt 文件（除了带时间戳的那个）
+        run: |
+          find output -type f -name "*.txt" ! -name "$date.txt" -exec rm {} \;
         shell: bash
 
       - name: Commit results to Github  # 将结果提交到 Github
