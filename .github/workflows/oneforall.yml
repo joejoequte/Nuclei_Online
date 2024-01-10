@@ -1,5 +1,4 @@
-name: Incloud_Github_Fuzzing
-
+name: Oneforall
 on:
     workflow_dispatch:
 
