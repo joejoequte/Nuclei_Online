@@ -1,0 +1,96 @@
+name: subfinder
+on:
+    workflow_dispatch:
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo  # 检出仓库
+        uses: actions/checkout@v2
+
+      - name: Set up Go  # 设置 Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.21'  # 更新 Go 版本到 1.21
+
+      - name: Setup Dependencies  # 安装依赖项
+        run: sudo apt-get install libpcap-dev
+        
+      - name: Cache Go and ProjectDiscovery tools  # 缓存 Go 和 ProjectDiscovery 工具
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/go/pkg
+            ~/.cache/go-build
+            ~/go/bin/subfinder
+            ~/go/bin/dnsx
+            ~/go/bin/naabu
+            ~/go/bin/httpx
+            ~/go/bin/mapcidr
+            ~/go/bin/ffuf
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          
+
+      - name: 安装 ProjectDiscovery 工具
+        env:
+          GO111MODULE: on
+        run: |
+          go install github.com/projectdiscovery/dnsx/cmd/dnsx@latest
+          go install github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
+          go install github.com/projectdiscovery/httpx/cmd/httpx@latest
+          go install github.com/projectdiscovery/mapcidr/cmd/mapcidr@latest
+          go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
+          go install github.com/ffuf/ffuf@latest
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Running SubFinder for passive DNS enumeration  # 运行 SubFinder 进行被动 DNS 枚举
+        run: |
+          subfinder -dL input/domains.txt -config config/subfinder-config.yaml -o output/passive_subdomains.txt
+        shell: bash
+        
+      - name: Running dnsx for valid DNS filtering   # 运行 dnsx 进行有效 DNS 过滤
+        run: |
+          dnsx -l output/passive_subdomains.txt -t 100 | tee output/active_subdomains.txt
+        shell: bash
+
+      - name: Running httpx for HTTP webservers probbing  # 运行 httpx 进行 HTTP 服务器探测
+        run: |
+          httpx -l output/active_subdomains.txt -title
+          httpx -l output/active_subdomains.txt | tee output/active_urls.txt
+        shell: bash
+      
+      - name: Nuclei - Vulnerability Scan  # Nuclei - 漏洞扫描
+        run: |
+          nuclei -list output/active_urls.txt -c 100 -o output/vuln.txt
+        shell: bash
+
+      - name: Sorting the output results  # 排序输出结果
+        run: |
+          find output -type f -exec sort {} -o {} \;
+        shell: bash
+
+      - name: Create a timestamped result file  # 创建一个带时间戳的结果文件
+        run: |
+          date=$(date +%Y%m%d%H%M%S)
+          cp output/vuln.txt output/$date.txt
+          git add output/$date.txt
+        shell: bash
+
+      - name: Clear all txt files except the timestamped one  # 清空所有的 txt 文件（除了带时间戳的那个）
+        run: |
+          find output -type f -name "*.txt" ! -name "$date.txt" -exec truncate -s 0 {} \;
+        shell: bash
+
+      - name: Commit results to Github  # 将结果提交到 Github
+        run: |
+          git config --local user.email "2991885177@qq.com"
+          git config --global user.name "joejoequte"
+          git commit -m "Nuclei Report" -a --allow-empty
+      - name: Push changes  # 推送更改
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GIT_TOKEN }}
+          branch: ${{ github.ref }}
