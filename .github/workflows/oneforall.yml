@@ -59,7 +59,7 @@ jobs:
 
       - name: Running dnsx for valid DNS filtering   # 运行 dnsx 进行有效 DNS 过滤
         run: |
-          dnsx -l output/oneforall.txt -t 50 | tee output/active_subdomains.txt
+          dnsx -l OneForAll/results/oneforall.txt -t 50 | tee output/active_subdomains.txt
         shell: bash
 
       - name: Running httpx for HTTP webservers probbing  # 运行 httpx 进行 HTTP 服务器探测
