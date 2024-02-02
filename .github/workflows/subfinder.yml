@@ -3,15 +3,14 @@ on:
     workflow_dispatch:
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo  # 检出仓库
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@v3  # 更新到 v3
+        
       - name: Set up Go  # 设置 Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3  # 更新到 v3
         with:
           go-version: '1.21'  # 更新 Go 版本到 1.21
 
@@ -19,7 +18,7 @@ jobs:
         run: sudo apt-get install libpcap-dev
         
       - name: Cache Go and ProjectDiscovery tools  # 缓存 Go 和 ProjectDiscovery 工具
-        uses: actions/cache@v2
+        uses: actions/cache@v3  # 更新到 v3
         with:
           path: |
             ~/go/pkg
