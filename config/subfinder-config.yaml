@@ -24,7 +24,6 @@ sources:
     - robtex
     - securitytrails
     - shodan
-    - threatminer
     - virustotal
 all-sources:
     - alienvault
@@ -51,7 +50,6 @@ all-sources:
     - sitedossier
     - sonarsearch
     - threatbook
-    - threatminer
     - virustotal
     - waybackarchive
     - zoomeye
