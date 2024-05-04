@@ -24,7 +24,6 @@ sources:
     - robtex
     - securitytrails
     - shodan
-    - sublist3r
     - threatcrowd
     - threatminer
     - virustotal
@@ -52,7 +51,6 @@ all-sources:
     - shodan
     - sitedossier
     - sonarsearch
-    - sublist3r
     - threatbook
     - threatcrowd
     - threatminer
@@ -70,7 +68,6 @@ recursive:
     - passivetotal
     - securitytrails
     - sonarsearch
-    - sublist3r
     - virustotal
 binaryedge: []
 censys: []
