@@ -24,7 +24,6 @@ sources:
     - robtex
     - securitytrails
     - shodan
-    - threatcrowd
     - threatminer
     - virustotal
 all-sources:
@@ -52,7 +51,6 @@ all-sources:
     - sitedossier
     - sonarsearch
     - threatbook
-    - threatcrowd
     - threatminer
     - virustotal
     - waybackarchive
