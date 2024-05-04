@@ -24,7 +24,6 @@ sources:
     - robtex
     - securitytrails
     - shodan
-    - spyse
     - sublist3r
     - threatcrowd
     - threatminer
@@ -53,7 +52,6 @@ all-sources:
     - shodan
     - sitedossier
     - sonarsearch
-    - spyse
     - sublist3r
     - threatbook
     - threatcrowd
@@ -86,7 +84,6 @@ recon: []
 robtex: []
 securitytrails: []
 shodan: []
-spyse: []
 threatbook: []
 urlscan: []
 virustotal: []
