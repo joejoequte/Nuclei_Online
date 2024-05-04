@@ -22,7 +22,6 @@ sources:
     - intelx
     - passivetotal
     - robtex
-    - riddler
     - securitytrails
     - shodan
     - spyse
@@ -48,7 +47,6 @@ all-sources:
     - intelx
     - passivetotal
     - rapiddns
-    - riddler
     - recon
     - robtex
     - securitytrails
